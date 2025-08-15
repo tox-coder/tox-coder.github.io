@@ -1,3 +1,8 @@
+// LAMPA_PLUGIN
+// name: Icon Color Changer
+// version: 1.0
+// author: tox-coder
+
 (function() {
     // Конфигурация плагина
     const config = {
