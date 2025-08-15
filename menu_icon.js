@@ -1,62 +1,88 @@
 // LAMPA_PLUGIN
-// name: Settings Icons Color
-// version: 1.2
-// desc: Changes color only for settings menu icons
+// name: Exact Settings Icons Color
+// version: 1.4
+// desc: Precise color change only for settings icons
 
 (function() {
-    const TARGET_COLOR = '#FF5722'; // Оранжевый цвет
-    const DELAYS = [0, 500, 1000, 2000]; // Задержки для обработки
+    const SETTINGS_COLOR = '#FF5722'; // Оранжевый
+    const DELAYS = [0, 800, 1500]; // Оптимальные задержки
     
-    function applyColor() {
+    function applyExactColors() {
         try {
-            // Основные селекторы для меню настроек Lampa
-            const selectors = [
-                'div.sidebar ion-icon',       // Стандартный сайдбар
-                'div.menu-content ion-icon',  // Контент меню
-                'div.settings-list ion-icon',// Список настроек
-                'ion-item ion-icon',          // Элементы меню
-                'div[class*="menu"] ion-icon',// Любые элементы с "menu" в классе
-                'div[class*="settings"] ion-icon' // Элементы с "settings"
+            // 1. Точечные селекторы для настроек (основные пункты)
+            const exactSettingsSelectors = [
+                'div.settings-item ion-icon', // Основные пункты
+                'div.settings-option ion-icon', // Опции
+                'div.menu-settings ion-icon', // Контейнер настроек
+                'ion-item.setting-item ion-icon' // Элементы настроек
             ];
             
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(icon => {
+            // 2. Общие селекторы (резервные)
+            const fallbackSelectors = [
+                'ion-menu[side="end"] ion-icon', // Правое меню
+                'div[class*="setting"] ion-icon' // Любые элементы с "setting"
+            ];
+            
+            // Сначала применяем точные селекторы
+            let found = false;
+            exactSettingsSelectors.forEach(selector => {
+                const icons = document.querySelectorAll(selector);
+                if (icons.length > 0) found = true;
+                
+                icons.forEach(icon => {
                     icon.style.cssText += `
-                        color: ${TARGET_COLOR} !important;
+                        color: ${SETTINGS_COLOR} !important;
                         --ionicon-stroke-width: 32px !important;
                     `;
                 });
             });
             
-            // Дополнительно для SVG иконок
-            document.querySelectorAll('div.menu svg, div.settings svg').forEach(svg => {
-                svg.style.cssText += `
-                    fill: ${TARGET_COLOR} !important;
-                    color: ${TARGET_COLOR} !important;
-                `;
+            // Если точные не сработали, применяем резервные
+            if (!found) {
+                fallbackSelectors.forEach(selector => {
+                    document.querySelectorAll(selector).forEach(icon => {
+                        icon.style.cssText += `
+                            color: ${SETTINGS_COLOR} !important;
+                        `;
+                    });
+                });
+            }
+            
+            // Специально для иконок checkbox/radio
+            document.querySelectorAll('ion-checkbox, ion-radio').forEach(el => {
+                el.style.setProperty('--color-checked', SETTINGS_COLOR, 'important');
             });
             
         } catch (e) {
-            console.error('Lampa Icon Color Error:', e);
+            console.error('Settings Icons Color Error:', e);
         }
     }
     
-    // Многократное применение с разными задержками
-    DELAYS.forEach(delay => setTimeout(applyColor, delay));
+    // Запуск с оптимальными задержками
+    DELAYS.forEach(delay => setTimeout(applyExactColors, delay));
     
-    // Наблюдатель за динамическими изменениями
-    new MutationObserver(() => {
-        setTimeout(applyColor, 300);
-    }).observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    // Наблюдатель с фильтрацией
+    new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.addedNodes.length) {
+                setTimeout(applyExactColors, 300);
+            }
+        });
+    }).observe(document.body, { childList: true, subtree: true });
     
-    // Инициализация при полной загрузке
+    // Инициализация
+    const init = () => {
+        if (document.querySelector('ion-menu')) {
+            applyExactColors();
+        } else {
+            setTimeout(init, 300);
+        }
+    };
+    
     if (document.readyState === 'complete') {
-        applyColor();
+        init();
     } else {
-        window.addEventListener('load', applyColor);
-        document.addEventListener('DOMContentLoaded', applyColor);
+        document.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('load', init);
     }
 })();
