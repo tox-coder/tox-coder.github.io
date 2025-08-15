@@ -1,59 +1,51 @@
 (function() {
     // Конфигурация плагина
     const config = {
-        iconColor: '#11de02', // Зеленый цвет по умолчанию (можно изменить)
-        applyToAllIcons: false, // Применять ко всем иконкам или только к иконкам настроек
-        debugMode: false // Режим отладки (выводит логи в консоль)
+        iconColor: '#FF5722', // Оранжевый цвет по умолчанию
+        applyToAllIcons: false, // Теперь должно работать корректно
+        debugMode: true // Включим для диагностики
     };
 
-    // Функция для логгирования (только в debug режиме)
     function log(message) {
         if (config.debugMode) {
             console.log('[IconColorPlugin] ' + message);
         }
     }
 
-    // Основная функция изменения цвета иконок
     function applyIconColors() {
         try {
-            // Находим все элементы иконок
-            let iconSelectors = config.applyToAllIcons 
-                ? 'ion-icon, mat-icon, .icon, [class*="icon"], [class*="Icon"]' 
-                : '.settings-icon, .menu-icon, [class*="settings"], [class*="menu"]';
-
-            const icons = document.querySelectorAll(iconSelectors);
+            let icons;
+            
+            if (config.applyToAllIcons) {
+                // Общий селектор для всех иконок
+                icons = document.querySelectorAll('ion-icon, mat-icon, .icon, [class*="icon"], [class*="Icon"], svg');
+                log('Режим: все иконки');
+            } else {
+                // Специфичные селекторы для меню настроек Lampa
+                icons = document.querySelectorAll('.settings-menu ion-icon, .settings-menu mat-icon, .settings-menu svg, [class*="settings"] ion-icon, [class*="menu"] ion-icon, .menu-item ion-icon');
+                log('Режим: только иконки настроек');
+            }
             
             log(`Найдено иконок: ${icons.length}`);
             
-            // Изменяем цвет каждой иконки
             icons.forEach(icon => {
                 try {
-                    // Для ионных иконок
                     if (icon.tagName.toLowerCase() === 'ion-icon') {
                         icon.style.color = config.iconColor;
                         icon.style.setProperty('--ionicon-stroke-width', '32px', 'important');
                     } 
-                    // Для material иконок
                     else if (icon.tagName.toLowerCase() === 'mat-icon') {
                         icon.style.color = config.iconColor;
                     } 
-                    // Для других типов иконок
-                    else {
+                    else if (icon.tagName.toLowerCase() === 'svg') {
                         icon.style.fill = config.iconColor;
                         icon.style.color = config.iconColor;
                     }
                     
-                    log(`Изменена иконка: ${icon.tagName} (${icon.className})`);
+                    log(`Изменена иконка: ${icon.tagName} (${icon.className || 'no class'})`);
                 } catch (e) {
                     log(`Ошибка при обработке иконки: ${e}`);
                 }
-            });
-            
-            // Также меняем цвет SVG иконок
-            const svgIcons = document.querySelectorAll('svg');
-            svgIcons.forEach(svg => {
-                svg.style.fill = config.iconColor;
-                svg.style.color = config.iconColor;
             });
             
         } catch (e) {
@@ -61,14 +53,17 @@
         }
     }
 
-    // Функция для наблюдения за изменениями DOM
     function observeDOM() {
         const observer = new MutationObserver(function(mutations) {
+            let shouldUpdate = false;
             mutations.forEach(function(mutation) {
                 if (mutation.addedNodes.length) {
-                    applyIconColors();
+                    shouldUpdate = true;
                 }
             });
+            if (shouldUpdate) {
+                applyIconColors();
+            }
         });
 
         observer.observe(document.body, {
@@ -77,24 +72,21 @@
         });
     }
 
-    // Инициализация плагина
     function initPlugin() {
         log('Плагин инициализирован');
-        
-        // Применяем цвета сразу после загрузки
         applyIconColors();
-        
-        // Начинаем наблюдение за изменениями DOM
         observeDOM();
         
-        // Также применяем цвета периодически на случай динамической загрузки
-        setInterval(applyIconColors, 3000);
+        // Дополнительная проверка после полной загрузки
+        setTimeout(applyIconColors, 1500);
+        setTimeout(applyIconColors, 3000);
     }
 
-    // Запускаем плагин после полной загрузки страницы
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(initPlugin, 100);
+    // Запуск
+    if (document.readyState === 'complete') {
+        initPlugin();
     } else {
+        window.addEventListener('load', initPlugin);
         document.addEventListener('DOMContentLoaded', initPlugin);
     }
 })();
