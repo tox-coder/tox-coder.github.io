@@ -1,62 +1,62 @@
 // LAMPA_PLUGIN
-// name: Guaranteed Settings Icons
-// version: 2.0
-// desc: 100% working settings icons color
+// name: Settings Icons Color
+// version: 1.2
+// desc: Changes color only for settings menu icons
 
 (function() {
-    const COLOR = '#FF5722'; // Оранжевый
-    const OBSERVE_INTERVAL = 2000; // Проверка каждые 2 сек
+    const TARGET_COLOR = '#FF5722'; // Оранжевый цвет
+    const DELAYS = [0, 500, 1000, 2000]; // Задержки для обработки
     
-    // Создаем стиль в head документа
-    const style = document.createElement('style');
-    style.id = 'lampa-icons-css';
-    style.textContent = `
-        /* Основные иконки настроек */
-        div.settings-list ion-icon,
-        div.settings-content ion-icon,
-        div.settings-item ion-icon,
-        ion-menu[side="end"] ion-icon,
-        ion-item.setting-item ion-icon {
-            color: ${COLOR} !important;
-            --ionicon-stroke-width: 32px !important;
-        }
-        
-        /* Чекбоксы и переключатели */
-        ion-checkbox.setting-item, 
-        ion-toggle.setting-item {
-            --color-checked: ${COLOR} !important;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Постоянный наблюдатель
-    const observer = new MutationObserver(() => {
-        document.querySelectorAll('ion-icon').forEach(icon => {
-            if (icon.closest('.settings-list, .settings-content, [class*="setting"]')) {
-                icon.style.cssText = `
-                    color: ${COLOR} !important;
-                    --ionicon-stroke-width: 32px !important;
+    function applyColor() {
+        try {
+            // Основные селекторы для меню настроек Lampa
+            const selectors = [
+                'div.sidebar ion-icon',       // Стандартный сайдбар
+                'div.menu-content ion-icon',  // Контент меню
+                'div.settings-list ion-icon',// Список настроек
+                'ion-item ion-icon',          // Элементы меню
+                'div[class*="menu"] ion-icon',// Любые элементы с "menu" в классе
+                'div[class*="settings"] ion-icon' // Элементы с "settings"
+            ];
+            
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(icon => {
+                    icon.style.cssText += `
+                        color: ${TARGET_COLOR} !important;
+                        --ionicon-stroke-width: 32px !important;
+                    `;
+                });
+            });
+            
+            // Дополнительно для SVG иконок
+            document.querySelectorAll('div.menu svg, div.settings svg').forEach(svg => {
+                svg.style.cssText += `
+                    fill: ${TARGET_COLOR} !important;
+                    color: ${TARGET_COLOR} !important;
                 `;
-            }
-        });
-    });
+            });
+            
+        } catch (e) {
+            console.error('Lampa Icon Color Error:', e);
+        }
+    }
     
-    observer.observe(document.body, {
+    // Многократное применение с разными задержками
+    DELAYS.forEach(delay => setTimeout(applyColor, delay));
+    
+    // Наблюдатель за динамическими изменениями
+    new MutationObserver(() => {
+        setTimeout(applyColor, 300);
+    }).observe(document.body, {
         childList: true,
         subtree: true
     });
     
-    // Запускаем постоянную проверку
-    setInterval(() => {
-        document.querySelectorAll('div[class*="setting"] ion-icon').forEach(icon => {
-            if (window.getComputedStyle(icon).color !== COLOR) {
-                icon.style.cssText = `
-                    color: ${COLOR} !important;
-                    --ionicon-stroke-width: 32px !important;
-                `;
-            }
-        });
-    }, OBSERVE_INTERVAL);
-    
-    console.log('Lampa Settings Icons Color applied');
+    // Инициализация при полной загрузке
+    if (document.readyState === 'complete') {
+        applyColor();
+    } else {
+        window.addEventListener('load', applyColor);
+        document.addEventListener('DOMContentLoaded', applyColor);
+    }
 })();
