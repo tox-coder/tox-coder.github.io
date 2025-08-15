@@ -1,62 +1,84 @@
 // LAMPA_PLUGIN
-// name: Settings Icons Color
-// version: 1.2
-// desc: Changes color only for settings menu icons
+// name: Ultimate Icon Color
+// version: 3.0
+// desc: Forces color on all settings icons
 
 (function() {
-    const TARGET_COLOR = '#FF5722'; // Оранжевый цвет
-    const DELAYS = [0, 500, 1000, 2000]; // Задержки для обработки
+    const TARGET_COLOR = '#11de02'; // Ярко-зеленый
+    const CHECK_INTERVAL = 1000; // Проверка каждую секунду
     
-    function applyColor() {
-        try {
-            // Основные селекторы для меню настроек Lampa
-            const selectors = [
-                'div.sidebar ion-icon',       // Стандартный сайдбар
-                'div.menu-content ion-icon',  // Контент меню
-                'div.settings-list ion-icon',// Список настроек
-                'ion-item ion-icon',          // Элементы меню
-                'div[class*="menu"] ion-icon',// Любые элементы с "menu" в классе
-                'div[class*="settings"] ion-icon' // Элементы с "settings"
-            ];
-            
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(icon => {
-                    icon.style.cssText += `
-                        color: ${TARGET_COLOR} !important;
-                        --ionicon-stroke-width: 32px !important;
-                    `;
-                });
-            });
-            
-            // Дополнительно для SVG иконок
-            document.querySelectorAll('div.menu svg, div.settings svg').forEach(svg => {
-                svg.style.cssText += `
+    // 1. Инъекция CSS с максимальным приоритетом
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Базовые иконки */
+        ion-icon.settings-icon,
+        ion-icon[class*="setting"],
+        .settings-menu ion-icon,
+        .settings-content ion-icon,
+        .settings-item ion-icon,
+        ion-menu ion-icon {
+            color: ${TARGET_COLOR} !important;
+            fill: ${TARGET_COLOR} !important;
+            --ionicon-stroke-width: 32px !important;
+        }
+        
+        /* Специальные элементы */
+        ion-checkbox, ion-toggle {
+            --color-checked: ${TARGET_COLOR} !important;
+        }
+        
+        /* SVG иконки */
+        .settings-menu svg,
+        .settings-content svg {
+            fill: ${TARGET_COLOR} !important;
+            color: ${TARGET_COLOR} !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 2. Агрессивный обработчик
+    function forceColor() {
+        // Обычные иконки
+        document.querySelectorAll('ion-icon').forEach(icon => {
+            if (icon.closest('.settings-menu, .settings-content, [class*="setting"], ion-menu')) {
+                icon.style.cssText = `
+                    color: ${TARGET_COLOR} !important;
+                    fill: ${TARGET_COLOR} !important;
+                    --ionicon-stroke-width: 32px !important;
+                `;
+            }
+        });
+        
+        // SVG элементы
+        document.querySelectorAll('svg').forEach(svg => {
+            if (svg.closest('[class*="setting"]')) {
+                svg.style.cssText = `
                     fill: ${TARGET_COLOR} !important;
                     color: ${TARGET_COLOR} !important;
                 `;
-            });
-            
-        } catch (e) {
-            console.error('Lampa Icon Color Error:', e);
-        }
+            }
+        });
+        
+        // Чекбоксы и переключатели
+        document.querySelectorAll('ion-checkbox, ion-toggle').forEach(el => {
+            if (el.closest('[class*="setting"]')) {
+                el.style.setProperty('--color-checked', TARGET_COLOR, 'important');
+            }
+        });
     }
     
-    // Многократное применение с разными задержками
-    DELAYS.forEach(delay => setTimeout(applyColor, delay));
+    // 3. Запускаем постоянную проверку
+    const intervalId = setInterval(forceColor, CHECK_INTERVAL);
     
-    // Наблюдатель за динамическими изменениями
-    new MutationObserver(() => {
-        setTimeout(applyColor, 300);
-    }).observe(document.body, {
-        childList: true,
-        subtree: true
+    // Первое применение
+    setTimeout(forceColor, 300);
+    setTimeout(forceColor, 1000);
+    setTimeout(forceColor, 3000);
+    
+    // Очистка при разгрузке страницы (опционально)
+    window.addEventListener('unload', () => {
+        clearInterval(intervalId);
     });
     
-    // Инициализация при полной загрузке
-    if (document.readyState === 'complete') {
-        applyColor();
-    } else {
-        window.addEventListener('load', applyColor);
-        document.addEventListener('DOMContentLoaded', applyColor);
-    }
+    console.log('Ultimate Icon Color applied!');
 })();
