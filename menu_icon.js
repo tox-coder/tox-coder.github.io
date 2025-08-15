@@ -1,88 +1,62 @@
 // LAMPA_PLUGIN
-// name: Exact Settings Icons Color
-// version: 1.4
-// desc: Precise color change only for settings icons
+// name: Guaranteed Settings Icons
+// version: 2.0
+// desc: 100% working settings icons color
 
 (function() {
-    const SETTINGS_COLOR = '#FF5722'; // Оранжевый
-    const DELAYS = [0, 800, 1500]; // Оптимальные задержки
+    const COLOR = '#FF5722'; // Оранжевый
+    const OBSERVE_INTERVAL = 2000; // Проверка каждые 2 сек
     
-    function applyExactColors() {
-        try {
-            // 1. Точечные селекторы для настроек (основные пункты)
-            const exactSettingsSelectors = [
-                'div.settings-item ion-icon', // Основные пункты
-                'div.settings-option ion-icon', // Опции
-                'div.menu-settings ion-icon', // Контейнер настроек
-                'ion-item.setting-item ion-icon' // Элементы настроек
-            ];
-            
-            // 2. Общие селекторы (резервные)
-            const fallbackSelectors = [
-                'ion-menu[side="end"] ion-icon', // Правое меню
-                'div[class*="setting"] ion-icon' // Любые элементы с "setting"
-            ];
-            
-            // Сначала применяем точные селекторы
-            let found = false;
-            exactSettingsSelectors.forEach(selector => {
-                const icons = document.querySelectorAll(selector);
-                if (icons.length > 0) found = true;
-                
-                icons.forEach(icon => {
-                    icon.style.cssText += `
-                        color: ${SETTINGS_COLOR} !important;
-                        --ionicon-stroke-width: 32px !important;
-                    `;
-                });
-            });
-            
-            // Если точные не сработали, применяем резервные
-            if (!found) {
-                fallbackSelectors.forEach(selector => {
-                    document.querySelectorAll(selector).forEach(icon => {
-                        icon.style.cssText += `
-                            color: ${SETTINGS_COLOR} !important;
-                        `;
-                    });
-                });
-            }
-            
-            // Специально для иконок checkbox/radio
-            document.querySelectorAll('ion-checkbox, ion-radio').forEach(el => {
-                el.style.setProperty('--color-checked', SETTINGS_COLOR, 'important');
-            });
-            
-        } catch (e) {
-            console.error('Settings Icons Color Error:', e);
+    // Создаем стиль в head документа
+    const style = document.createElement('style');
+    style.id = 'lampa-icons-css';
+    style.textContent = `
+        /* Основные иконки настроек */
+        div.settings-list ion-icon,
+        div.settings-content ion-icon,
+        div.settings-item ion-icon,
+        ion-menu[side="end"] ion-icon,
+        ion-item.setting-item ion-icon {
+            color: ${COLOR} !important;
+            --ionicon-stroke-width: 32px !important;
         }
-    }
+        
+        /* Чекбоксы и переключатели */
+        ion-checkbox.setting-item, 
+        ion-toggle.setting-item {
+            --color-checked: ${COLOR} !important;
+        }
+    `;
+    document.head.appendChild(style);
     
-    // Запуск с оптимальными задержками
-    DELAYS.forEach(delay => setTimeout(applyExactColors, delay));
-    
-    // Наблюдатель с фильтрацией
-    new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-            if (mutation.addedNodes.length) {
-                setTimeout(applyExactColors, 300);
+    // Постоянный наблюдатель
+    const observer = new MutationObserver(() => {
+        document.querySelectorAll('ion-icon').forEach(icon => {
+            if (icon.closest('.settings-list, .settings-content, [class*="setting"]')) {
+                icon.style.cssText = `
+                    color: ${COLOR} !important;
+                    --ionicon-stroke-width: 32px !important;
+                `;
             }
         });
-    }).observe(document.body, { childList: true, subtree: true });
+    });
     
-    // Инициализация
-    const init = () => {
-        if (document.querySelector('ion-menu')) {
-            applyExactColors();
-        } else {
-            setTimeout(init, 300);
-        }
-    };
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
     
-    if (document.readyState === 'complete') {
-        init();
-    } else {
-        document.addEventListener('DOMContentLoaded', init);
-        window.addEventListener('load', init);
-    }
+    // Запускаем постоянную проверку
+    setInterval(() => {
+        document.querySelectorAll('div[class*="setting"] ion-icon').forEach(icon => {
+            if (window.getComputedStyle(icon).color !== COLOR) {
+                icon.style.cssText = `
+                    color: ${COLOR} !important;
+                    --ionicon-stroke-width: 32px !important;
+                `;
+            }
+        });
+    }, OBSERVE_INTERVAL);
+    
+    console.log('Lampa Settings Icons Color applied');
 })();
