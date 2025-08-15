@@ -1,110 +1,66 @@
 // LAMPA_PLUGIN
-// name: Terminator Icon Color
-// version: 6.0
-// desc: 100% working solution for stubborn icons in Lampa 1.12.2 Lite
+// name: Lampa 1.12.2 Icon Color Fix
+// version: 7.0
+// desc: Precise icon coloring for Lampa 1.12.2 Lite
 
 (function() {
-    const TARGET_COLOR = '#FF5722'; // Оранжевый
-    const BORDER_COLOR = '#00FF00'; // Зеленый для диагностики
+    const ICON_COLOR = '#FF5722'; // Оранжевый
+    const CHECK_INTERVAL = 1000; // Проверка каждую секунду
     
-    // 1. Создаем мутационный наблюдатель с максимальной агрессивностью
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length > 0) {
-                nukeAllIcons();
-            }
+    // 1. Точечные селекторы для Lampa 1.12.2 Lite
+    const ICON_SELECTORS = [
+        'ion-icon.md',                  // Material Design иконки
+        'ion-icon.ios',                 // iOS стиль
+        'ion-icon[name^="md-"]',        // Ионные иконки MD
+        'ion-icon[name^="ios-"]',       // Ионные иконки iOS
+        '.tab-button-icon',             // Иконки вкладок
+        '.menu-item-icon',              // Иконки меню
+        '.settings-item-icon',          // Иконки настроек
+        'ion-item.item ion-icon',       // Иконки в пунктах меню
+        'ion-checkbox, ion-toggle'      // Чекбоксы
+    ];
+    
+    // 2. Функция точного окрашивания
+    function colorizeRealIcons() {
+        ICON_SELECTORS.forEach(selector => {
+            document.querySelectorAll(selector).forEach(icon => {
+                // Для ионных иконок
+                if(icon.tagName === 'ION-ICON') {
+                    icon.style.cssText = `
+                        color: ${ICON_COLOR} !important;
+                        --ionicon-stroke-width: 32px !important;
+                        fill: ${ICON_COLOR} !important;
+                    `;
+                } 
+                // Для чекбоксов
+                else if(icon.tagName === 'ION-CHECKBOX' || icon.tagName === 'ION-TOGGLE') {
+                    icon.style.cssText = `
+                        --color-checked: ${ICON_COLOR} !important;
+                        --color: ${ICON_COLOR} !important;
+                    `;
+                }
+            });
         });
-    });
-    
-    // 2. Ядерная функция окрашивания
-    function nukeAllIcons() {
-        try {
-            // Метод 1: Перехват всех возможных иконок
-            document.querySelectorAll('*').forEach(element => {
-                // Проверяем, является ли элемент иконкой
-                if (isIconElement(element)) {
-                    paintElement(element);
-                }
-                
-                // Проверяем все дочерние элементы
-                element.querySelectorAll('*').forEach(child => {
-                    if (isIconElement(child)) {
-                        paintElement(child);
-                    }
-                });
-            });
-            
-            // Метод 2: Перехват по computed styles
-            document.querySelectorAll('*').forEach(element => {
-                const style = window.getComputedStyle(element);
-                if (isIconComputed(style)) {
-                    paintElement(element);
-                }
-            });
-            
-        } catch (e) {
-            console.error('Terminator error:', e);
-        }
-    }
-    
-    // 3. Вспомогательные функции
-    function isIconElement(el) {
-        return (
-            el.tagName === 'ION-ICON' ||
-            el.tagName === 'SVG' ||
-            el.className.includes('icon') ||
-            el.className.includes('Icon') ||
-            el.getAttribute('aria-label')?.includes('icon') ||
-            el.innerHTML.includes('path') ||
-            el.innerHTML.includes('svg')
-        );
-    }
-    
-    function isIconComputed(style) {
-        return (
-            style.display === 'flex' ||
-            style.width === '24px' ||
-            style.height === '24px' ||
-            style.backgroundImage.includes('icon') ||
-            style.content.includes('icon')
-        );
-    }
-    
-    function paintElement(el) {
-        // Основное окрашивание
-        el.style.cssText += `
-            color: ${TARGET_COLOR} !important;
-            fill: ${TARGET_COLOR} !important;
-            stroke: ${TARGET_COLOR} !important;
-            background-color: transparent !important;
-            border: 1px solid ${BORDER_COLOR} !important; /* Для диагностики */
-        `;
         
-        // Особые случаи
-        if (el.tagName === 'ION-ICON') {
-            el.style.setProperty('--ionicon-stroke-width', '32px', 'important');
-        }
-        
-        if (el.tagName === 'ION-CHECKBOX' || el.tagName === 'ION-TOGGLE') {
-            el.style.setProperty('--color-checked', TARGET_COLOR, 'important');
-        }
+        // 3. Специальная обработка SVG внутри иконок
+        document.querySelectorAll('ion-icon svg').forEach(svg => {
+            svg.style.cssText = `
+                fill: ${ICON_COLOR} !important;
+                color: ${ICON_COLOR} !important;
+            `;
+        });
     }
     
-    // 4. Запускаем "Терминатора"
+    // 4. Запускаем с оптимальными задержками
+    const delays = [0, 300, 800, 1500, 3000, 5000];
+    delays.forEach(delay => setTimeout(colorizeRealIcons, delay));
+    
+    // 5. Постоянный наблюдатель
+    const observer = new MutationObserver(colorizeRealIcons);
     observer.observe(document.body, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        characterData: true
+        subtree: true
     });
     
-    // Первый запуск с разными задержками
-    [0, 100, 300, 1000, 3000, 10000].forEach(timeout => {
-        setTimeout(nukeAllIcons, timeout);
-    });
-    
-    // Бесконечный цикл проверки
-    setInterval(nukeAllIcons, 2000);
-    
-    console.log('Terminator Icon Color activated - resistance is futile');
+    console.log('Lampa 1.12.2 Icon Color activated');
 })();
