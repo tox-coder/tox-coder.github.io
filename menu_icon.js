@@ -1,41 +1,62 @@
 // LAMPA_PLUGIN
-// name: Settings Icon Color
-// version: 1.1
-// desc: Changes settings menu icons color
+// name: Settings Icons Color
+// version: 1.2
+// desc: Changes color only for settings menu icons
 
 (function() {
-    const TARGET_COLOR = '#FF5722'; // Оранжевый
-    const OBSERVE_DELAY = 100;
+    const TARGET_COLOR = '#FF5722'; // Оранжевый цвет
+    const DELAYS = [0, 500, 1000, 2000]; // Задержки для обработки
     
-    function colorizeIcons() {
-        // Попробуйте разные селекторы для вашей версии Lampa
-        const selectors = [
-            '.settings-content ion-icon',
-            'ion-menu ion-icon',
-            '.menu-panel .item-icon',
-            'div.menu ion-icon'
-        ];
-        
-        selectors.forEach(selector => {
-            document.querySelectorAll(selector).forEach(icon => {
-                if (icon) {
-                    icon.style.cssText += `color: ${TARGET_COLOR} !important;`;
-                    icon.style.setProperty('--ionicon-stroke-width', '32px', 'important');
-                }
+    function applyColor() {
+        try {
+            // Основные селекторы для меню настроек Lampa
+            const selectors = [
+                'div.sidebar ion-icon',       // Стандартный сайдбар
+                'div.menu-content ion-icon',  // Контент меню
+                'div.settings-list ion-icon',// Список настроек
+                'ion-item ion-icon',          // Элементы меню
+                'div[class*="menu"] ion-icon',// Любые элементы с "menu" в классе
+                'div[class*="settings"] ion-icon' // Элементы с "settings"
+            ];
+            
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(icon => {
+                    icon.style.cssText += `
+                        color: ${TARGET_COLOR} !important;
+                        --ionicon-stroke-width: 32px !important;
+                    `;
+                });
             });
-        });
+            
+            // Дополнительно для SVG иконок
+            document.querySelectorAll('div.menu svg, div.settings svg').forEach(svg => {
+                svg.style.cssText += `
+                    fill: ${TARGET_COLOR} !important;
+                    color: ${TARGET_COLOR} !important;
+                `;
+            });
+            
+        } catch (e) {
+            console.error('Lampa Icon Color Error:', e);
+        }
     }
     
-    // Многократное применение для динамического контента
-    [0, 500, 1000, 2000, 5000].forEach(timeout => {
-        setTimeout(colorizeIcons, timeout);
-    });
+    // Многократное применение с разными задержками
+    DELAYS.forEach(delay => setTimeout(applyColor, delay));
     
-    // Наблюдатель за изменениями DOM
+    // Наблюдатель за динамическими изменениями
     new MutationObserver(() => {
-        setTimeout(colorizeIcons, OBSERVE_DELAY);
+        setTimeout(applyColor, 300);
     }).observe(document.body, {
         childList: true,
         subtree: true
     });
+    
+    // Инициализация при полной загрузке
+    if (document.readyState === 'complete') {
+        applyColor();
+    } else {
+        window.addEventListener('load', applyColor);
+        document.addEventListener('DOMContentLoaded', applyColor);
+    }
 })();
