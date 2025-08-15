@@ -1,84 +1,48 @@
 // LAMPA_PLUGIN
-// name: Ultimate Icon Color
-// version: 3.0
-// desc: Forces color on all settings icons
+// name: Settings Icons Fix
+// version: 3.1
+// desc: Precise coloring for your Lampa version
 
 (function() {
-    const TARGET_COLOR = '#11de02'; // Ярко-зеленый
-    const CHECK_INTERVAL = 1000; // Проверка каждую секунду
-    
-    // 1. Инъекция CSS с максимальным приоритетом
-    const style = document.createElement('style');
-    style.textContent = `
-        /* Базовые иконки */
-        ion-icon.settings-icon,
-        ion-icon[class*="setting"],
-        .settings-menu ion-icon,
-        .settings-content ion-icon,
-        .settings-item ion-icon,
-        ion-menu ion-icon {
-            color: ${TARGET_COLOR} !important;
-            fill: ${TARGET_COLOR} !important;
-            --ionicon-stroke-width: 32px !important;
-        }
+    const ACTIVE_COLOR = '#4CAF50'; // Зеленый
+    const INACTIVE_COLOR = '#FF5722'; // Оранжевый
+    const CHECK_DELAY = 500; // Проверка каждые 0.5 сек
+
+    function colorizeSettingsIcons() {
+        // 1. Окрашиваем все иконки в настройках
+        const allSettingIcons = document.querySelectorAll(`
+            div.settings-menu ion-icon,
+            div.settings-content ion-icon,
+            div.settings-item ion-icon,
+            ion-item.item-setting ion-icon
+        `);
         
-        /* Специальные элементы */
-        ion-checkbox, ion-toggle {
-            --color-checked: ${TARGET_COLOR} !important;
-        }
-        
-        /* SVG иконки */
-        .settings-menu svg,
-        .settings-content svg {
-            fill: ${TARGET_COLOR} !important;
-            color: ${TARGET_COLOR} !important;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // 2. Агрессивный обработчик
-    function forceColor() {
-        // Обычные иконки
-        document.querySelectorAll('ion-icon').forEach(icon => {
-            if (icon.closest('.settings-menu, .settings-content, [class*="setting"], ion-menu')) {
-                icon.style.cssText = `
-                    color: ${TARGET_COLOR} !important;
-                    fill: ${TARGET_COLOR} !important;
-                    --ionicon-stroke-width: 32px !important;
-                `;
-            }
+        allSettingIcons.forEach((icon, index) => {
+            // Четные - зеленые, нечетные - оранжевые
+            const color = index % 2 === 0 ? ACTIVE_COLOR : INACTIVE_COLOR;
+            icon.style.cssText = `
+                color: ${color} !important;
+                --ionicon-stroke-width: 32px !important;
+                opacity: 1 !important;
+            `;
         });
-        
-        // SVG элементы
-        document.querySelectorAll('svg').forEach(svg => {
-            if (svg.closest('[class*="setting"]')) {
-                svg.style.cssText = `
-                    fill: ${TARGET_COLOR} !important;
-                    color: ${TARGET_COLOR} !important;
-                `;
-            }
-        });
-        
-        // Чекбоксы и переключатели
-        document.querySelectorAll('ion-checkbox, ion-toggle').forEach(el => {
-            if (el.closest('[class*="setting"]')) {
-                el.style.setProperty('--color-checked', TARGET_COLOR, 'important');
-            }
+
+        // 2. Особые элементы (чекбоксы)
+        document.querySelectorAll(`
+            ion-checkbox.setting-item,
+            ion-toggle.setting-item
+        `).forEach(el => {
+            el.style.setProperty('--color-checked', ACTIVE_COLOR, 'important');
         });
     }
-    
-    // 3. Запускаем постоянную проверку
-    const intervalId = setInterval(forceColor, CHECK_INTERVAL);
+
+    // Запускаем с интервалом
+    const interval = setInterval(colorizeSettingsIcons, CHECK_DELAY);
     
     // Первое применение
-    setTimeout(forceColor, 300);
-    setTimeout(forceColor, 1000);
-    setTimeout(forceColor, 3000);
-    
-    // Очистка при разгрузке страницы (опционально)
-    window.addEventListener('unload', () => {
-        clearInterval(intervalId);
-    });
-    
-    console.log('Ultimate Icon Color applied!');
+    setTimeout(colorizeSettingsIcons, 300);
+    setTimeout(colorizeSettingsIcons, 1500);
+
+    // Очистка при закрытии
+    window.addEventListener('unload', () => clearInterval(interval));
 })();
