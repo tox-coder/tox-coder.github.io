@@ -4,7 +4,7 @@
 // desc: Changes color only for settings menu icons
 
 (function() {
-    const TARGET_COLOR = '#FF5722'; // Оранжевый цвет
+    const TARGET_COLOR = '#07e041'; // Зелений цвет
     const DELAYS = [0, 500, 1000, 2000]; // Задержки для обработки
     
     function applyColor() {
