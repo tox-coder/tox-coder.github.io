@@ -1,97 +1,41 @@
 // LAMPA_PLUGIN
-// name: Icon Color Changer
-// version: 1.0
-// author: tox-coder
+// name: Settings Icon Color
+// version: 1.1
+// desc: Changes settings menu icons color
 
 (function() {
-    // Конфигурация плагина
-    const config = {
-        iconColor: '#FF5722', // Оранжевый цвет по умолчанию
-        applyToAllIcons: true, // Теперь должно работать корректно
-        debugMode: true // Включим для диагностики
-    };
-
-    function log(message) {
-        if (config.debugMode) {
-            console.log('[IconColorPlugin] ' + message);
-        }
-    }
-
-    function applyIconColors() {
-        try {
-            let icons;
-            
-            if (config.applyToAllIcons) {
-                // Общий селектор для всех иконок
-                icons = document.querySelectorAll('ion-icon, mat-icon, .icon, [class*="icon"], [class*="Icon"], svg');
-                log('Режим: все иконки');
-            } else {
-                // Специфичные селекторы для меню настроек Lampa
-                icons = document.querySelectorAll('.settings-menu ion-icon, .settings-menu mat-icon, .settings-menu svg, [class*="settings"] ion-icon, [class*="menu"] ion-icon, .menu-item ion-icon');
-                log('Режим: только иконки настроек');
-            }
-            
-            log(`Найдено иконок: ${icons.length}`);
-            
-            icons.forEach(icon => {
-                try {
-                    if (icon.tagName.toLowerCase() === 'ion-icon') {
-                        icon.style.color = config.iconColor;
-                        icon.style.setProperty('--ionicon-stroke-width', '32px', 'important');
-                    } 
-                    else if (icon.tagName.toLowerCase() === 'mat-icon') {
-                        icon.style.color = config.iconColor;
-                    } 
-                    else if (icon.tagName.toLowerCase() === 'svg') {
-                        icon.style.fill = config.iconColor;
-                        icon.style.color = config.iconColor;
-                    }
-                    
-                    log(`Изменена иконка: ${icon.tagName} (${icon.className || 'no class'})`);
-                } catch (e) {
-                    log(`Ошибка при обработке иконки: ${e}`);
-                }
-            });
-            
-        } catch (e) {
-            log(`Ошибка в основном обработчике: ${e}`);
-        }
-    }
-
-    function observeDOM() {
-        const observer = new MutationObserver(function(mutations) {
-            let shouldUpdate = false;
-            mutations.forEach(function(mutation) {
-                if (mutation.addedNodes.length) {
-                    shouldUpdate = true;
-                }
-            });
-            if (shouldUpdate) {
-                applyIconColors();
-            }
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-
-    function initPlugin() {
-        log('Плагин инициализирован');
-        applyIconColors();
-        observeDOM();
+    const TARGET_COLOR = '#FF5722'; // Оранжевый
+    const OBSERVE_DELAY = 100;
+    
+    function colorizeIcons() {
+        // Попробуйте разные селекторы для вашей версии Lampa
+        const selectors = [
+            '.settings-content ion-icon',
+            'ion-menu ion-icon',
+            '.menu-panel .item-icon',
+            'div.menu ion-icon'
+        ];
         
-        // Дополнительная проверка после полной загрузки
-        setTimeout(applyIconColors, 1500);
-        setTimeout(applyIconColors, 3000);
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(icon => {
+                if (icon) {
+                    icon.style.cssText += `color: ${TARGET_COLOR} !important;`;
+                    icon.style.setProperty('--ionicon-stroke-width', '32px', 'important');
+                }
+            });
+        });
     }
-
-    // Запуск
-    if (document.readyState === 'complete') {
-        initPlugin();
-    } else {
-        window.addEventListener('load', initPlugin);
-        document.addEventListener('DOMContentLoaded', initPlugin);
-    }
+    
+    // Многократное применение для динамического контента
+    [0, 500, 1000, 2000, 5000].forEach(timeout => {
+        setTimeout(colorizeIcons, timeout);
+    });
+    
+    // Наблюдатель за изменениями DOM
+    new MutationObserver(() => {
+        setTimeout(colorizeIcons, OBSERVE_DELAY);
+    }).observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 })();
