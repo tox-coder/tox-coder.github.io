@@ -1,55 +1,62 @@
 // LAMPA_PLUGIN
-// name: SVG Icon Theme
-// version: 1.1
-// desc: Custom SVG icons for Lampa Android (аналогично PC-версии)
+// name: Settings Icons Color
+// version: 1.2
+// desc: Changes color only for settings menu icons
 
 (function() {
-    const ICON_COLOR = '#FF5722'; // Оранжевый
-    const SECONDARY_COLOR = '#4CAF50'; // Зеленый для второстепенных иконок
-    const UPDATE_INTERVAL = 1500; // Проверка каждые 1.5 сек
-
-    function customizeIcons() {
-        // 1. Основные иконки настроек (SVG)
-        document.querySelectorAll('.settings-menu svg, .settings-item svg').forEach(svg => {
-            // Изменяем цвет всех путей, кроме специальных случаев
-            svg.querySelectorAll('path').forEach(path => {
-                const currentFill = path.getAttribute('fill');
-                if (currentFill && currentFill !== 'none') {
-                    path.setAttribute('fill', ICON_COLOR);
-                }
+    const TARGET_COLOR = '#FF5722'; // Оранжевый цвет
+    const DELAYS = [0, 500, 1000, 2000]; // Задержки для обработки
+    
+    function applyColor() {
+        try {
+            // Основные селекторы для меню настроек Lampa
+            const selectors = [
+                'div.sidebar ion-icon',       // Стандартный сайдбар
+                'div.menu-content ion-icon',  // Контент меню
+                'div.settings-list ion-icon',// Список настроек
+                'ion-item ion-icon',          // Элементы меню
+                'div[class*="menu"] ion-icon',// Любые элементы с "menu" в классе
+                'div[class*="settings"] ion-icon' // Элементы с "settings"
+            ];
+            
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(icon => {
+                    icon.style.cssText += `
+                        color: ${TARGET_COLOR} !important;
+                        --ionicon-stroke-width: 32px !important;
+                    `;
+                });
             });
             
-            // Для иконок с обводкой
-            svg.querySelectorAll('[stroke]').forEach(el => {
-                el.setAttribute('stroke', ICON_COLOR);
+            // Дополнительно для SVG иконок
+            document.querySelectorAll('div.menu svg, div.settings svg').forEach(svg => {
+                svg.style.cssText += `
+                    fill: ${TARGET_COLOR} !important;
+                    color: ${TARGET_COLOR} !important;
+                `;
             });
-        });
-
-        // 2. Чекбоксы (специальная обработка)
-        document.querySelectorAll('.settings-item ion-checkbox').forEach(checkbox => {
-            checkbox.style.setProperty('--color-checked', SECONDARY_COLOR, 'important');
-        });
-
-        // 3. Дополнительные иконки (если есть)
-        const extraIcons = document.querySelectorAll('.settings-footer svg, .settings-header svg');
-        if (extraIcons.length > 0) {
-            extraIcons.forEach(svg => {
-                svg.style.fill = SECONDARY_COLOR;
-            });
+            
+        } catch (e) {
+            console.error('Lampa Icon Color Error:', e);
         }
     }
-
-    // Запускаем с интервалами
-    [0, 1000, 3000, 5000].forEach(timeout => {
-        setTimeout(customizeIcons, timeout);
-    });
-
-    // Постоянное обновление для динамического контента
-    const observer = new MutationObserver(customizeIcons);
-    observer.observe(document.body, {
+    
+    // Многократное применение с разными задержками
+    DELAYS.forEach(delay => setTimeout(applyColor, delay));
+    
+    // Наблюдатель за динамическими изменениями
+    new MutationObserver(() => {
+        setTimeout(applyColor, 300);
+    }).observe(document.body, {
         childList: true,
         subtree: true
     });
-
-    console.log('SVG Icon Theme applied!');
+    
+    // Инициализация при полной загрузке
+    if (document.readyState === 'complete') {
+        applyColor();
+    } else {
+        window.addEventListener('load', applyColor);
+        document.addEventListener('DOMContentLoaded', applyColor);
+    }
 })();
