@@ -7,7 +7,7 @@
     // Конфигурация плагина
     const config = {
         iconColor: '#FF5722', // Оранжевый цвет по умолчанию
-        applyToAllIcons: false, // Теперь должно работать корректно
+        applyToAllIcons: true, // Теперь должно работать корректно
         debugMode: true // Включим для диагностики
     };
 
