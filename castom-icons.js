@@ -1,39 +1,36 @@
 (function () {
-    function replaceIcons() {
-        let items = document.querySelectorAll('.settings-item');
+    'use strict';
 
-        if (items.length) {
-            function setIcon(item, svg) {
-                if (item && !item.querySelector('.custom-icon')) {
-                    let oldIcon = item.querySelector('.settings-item__icon, i, span');
-                    if (oldIcon) oldIcon.style.display = "none"; // ховаємо стандартну іконку
+    function applyCustomIcons() {
+        const icons = {
+            'Синхронизация': `<svg width="20" height="20" fill="#4CAF50" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a8 8 0 1 0 8 8h-2a6 6 0 1 1-6-6V2z"/></svg>`,
+            'Интерфейс': `<svg width="20" height="20" fill="#2196F3" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="2"/><rect x="3" y="9" width="14" height="2"/><rect x="3" y="14" width="14" height="2"/></svg>`,
+            'Плеер': `<svg width="20" height="20" fill="#FF9800" xmlns="http://www.w3.org/2000/svg"><polygon points="6,4 18,10 6,16"/></svg>`,
+            'Парсер': `<svg width="20" height="20" fill="#3F51B5" xmlns="http://www.w3.org/2000/svg"><path d="M10 2l6 6-6 6-6-6 6-6z"/></svg>`,
+            'TorrServer': `<svg width="20" height="20" fill="#00C853" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8"/></svg>`,
+            'TMDB': `<svg width="20" height="20" fill="#00BCD4" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="14" height="14" rx="2"/></svg>`,
+            'Плагины': `<svg width="20" height="20" fill="#E91E63" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a3 3 0 0 1 3 3h3v3a3 3 0 0 1 0 6v3h-3a3 3 0 0 1-6 0H4v-3a3 3 0 0 1 0-6V5h3a3 3 0 0 1 3-3z"/></svg>`
+        };
 
-                    let svgWrap = document.createElement("span");
-                    svgWrap.classList.add("custom-icon");
-                    svgWrap.style.marginRight = "8px";
-                    svgWrap.innerHTML = svg;
-                    item.prepend(svgWrap); // вставляємо перед текстом
+        document.querySelectorAll('.settings-item').forEach(item => {
+            const label = item.textContent.trim();
+            if (icons[label]) {
+                let iconContainer = item.querySelector('.settings-item__icon');
+                if (iconContainer) {
+                    iconContainer.innerHTML = icons[label]; // повністю замінюємо іконку
                 }
             }
-
-            setIcon(items[0], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#3FA9F5"><path d="M3 4h18v2H3V4zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg>'); // Інтерфейс
-            setIcon(items[1], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#FF6600"><path d="M8 5v14l11-7z"/></svg>'); // Плеєр
-            setIcon(items[2], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#0066FF"><path d="M10 2v20l10-10L10 2z"/></svg>'); // Парсер
-            setIcon(items[3], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#00CCCC"><path d="M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>'); // Інше
-            setIcon(items[4], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#FF0000"><path d="M4 4h16v16H4z"/></svg>'); // Додатки
-            setIcon(items[5], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#0055FF"><path d="M12 4v4l4-4-4-4v4zM4 12l4-4v8l-4-4zm16 0l-4 4V8l4 4zm-8 8v-4l-4 4 4 4v-4z"/></svg>'); // Бекап
-            setIcon(items[6], '<svg width="22" height="22" viewBox="0 0 24 24" fill="#FF6600"><path d="M20 17H4V5h16v12z"/></svg>'); // Підбірки
-        }
+        });
     }
 
-    // Повторна перевірка
-    const observer = new MutationObserver(() => {
-        if (document.querySelector('.settings-item')) {
-            replaceIcons();
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    function waitForSettings() {
+        const interval = setInterval(() => {
+            if (document.querySelector('.settings-item')) {
+                clearInterval(interval);
+                applyCustomIcons();
+            }
+        }, 500);
+    }
 
-    setInterval(replaceIcons, 2000);
-    setTimeout(replaceIcons, 1500);
+    waitForSettings();
 })();
