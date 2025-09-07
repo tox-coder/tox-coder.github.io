@@ -5,7 +5,7 @@
         if (items.length) {
             function setIcon(item, svg) {
                 if (item) {
-                    item.className = ''; // прибираємо старі стилі
+                    item.removeAttribute("class"); 
                     item.innerHTML = svg;
                 }
             }
@@ -20,10 +20,15 @@
         }
     }
 
-    // Коли відкривається меню "Налаштування"
-    Lampa.Listener.follow('settings', function (e) {
-        if (e.type === 'open') {
-            setTimeout(replaceIcons, 500);
+    // Слухаємо зміни DOM, щоб вчасно міняти іконки
+    const observer = new MutationObserver(() => {
+        if (document.querySelector('.settings-item__icon')) {
+            replaceIcons();
         }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
     });
 })();
