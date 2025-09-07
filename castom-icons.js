@@ -1,4 +1,3 @@
-
 (function () {
     function replaceIcons() {
         let items = document.querySelectorAll('.settings-item__icon');
@@ -6,8 +5,8 @@
         if (items.length) {
             function setIcon(item, svg) {
                 if (item) {
-                    item.innerHTML = ""; // повністю очищаємо стару іконку
-                    item.insertAdjacentHTML("afterbegin", svg); // вставляємо нову
+                    item.innerHTML = ""; // повністю очищаємо контейнер
+                    item.insertAdjacentHTML("afterbegin", svg);
                 }
             }
 
@@ -21,18 +20,17 @@
         }
     }
 
-    // Виклик при відкритті налаштувань
+    // MutationObserver для відслідковування появи меню
     const observer = new MutationObserver(() => {
         if (document.querySelector('.settings-item__icon')) {
             replaceIcons();
         }
     });
+    observer.observe(document.body, { childList: true, subtree: true });
 
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    // Циклічно на всяк випадок (кожні 2 секунди)
+    setInterval(replaceIcons, 2000);
 
-    // Запуск відразу при підключенні
+    // Перша спроба одразу після запуску
     setTimeout(replaceIcons, 1500);
 })();
