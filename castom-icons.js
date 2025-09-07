@@ -1,12 +1,18 @@
 (function () {
     function replaceIcons() {
-        let items = document.querySelectorAll('.settings-item__icon');
+        let items = document.querySelectorAll('.settings-item');
 
         if (items.length) {
             function setIcon(item, svg) {
-                if (item) {
-                    item.innerHTML = ""; // повністю очищаємо контейнер
-                    item.insertAdjacentHTML("afterbegin", svg);
+                if (item && !item.querySelector('.custom-icon')) {
+                    let oldIcon = item.querySelector('.settings-item__icon, i, span');
+                    if (oldIcon) oldIcon.style.display = "none"; // ховаємо стандартну іконку
+
+                    let svgWrap = document.createElement("span");
+                    svgWrap.classList.add("custom-icon");
+                    svgWrap.style.marginRight = "8px";
+                    svgWrap.innerHTML = svg;
+                    item.prepend(svgWrap); // вставляємо перед текстом
                 }
             }
 
@@ -20,17 +26,14 @@
         }
     }
 
-    // MutationObserver для відслідковування появи меню
+    // Повторна перевірка
     const observer = new MutationObserver(() => {
-        if (document.querySelector('.settings-item__icon')) {
+        if (document.querySelector('.settings-item')) {
             replaceIcons();
         }
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Циклічно на всяк випадок (кожні 2 секунди)
     setInterval(replaceIcons, 2000);
-
-    // Перша спроба одразу після запуску
     setTimeout(replaceIcons, 1500);
 })();
