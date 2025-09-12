@@ -18,7 +18,9 @@
         baseUrl + "logo11.png",
         baseUrl + "logo12.png",
         baseUrl + "logo13.png",
-        baseUrl + "logo14.png"
+        baseUrl + "logo14.png",
+        baseUrl + "logo15.png",
+        baseUrl + "logo16.png"
     ];
 
     var style = document.createElement('style');
