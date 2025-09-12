@@ -2,7 +2,7 @@
     'use strict';
 
     // 🔗 Замініть "user/repo" на ваш GitHub репозиторій
-    var baseUrl = "https://github.com/tox-coder/tox-coder.github.io/edit/main/icons/";
+    var baseUrl = "https://raw.githubusercontent.com/tox-coder/tox-coder.github.io/main/icons/";
 
     var iconImages = [
         baseUrl + "logo1.png",
