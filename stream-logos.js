@@ -20,7 +20,8 @@
         baseUrl + "logo13.png",
         baseUrl + "logo14.png",
         baseUrl + "logo15.png",
-        baseUrl + "logo16.png"
+        baseUrl + "logo16.png",
+        baseUrl + "logo17.png"
     ];
 
     var style = document.createElement('style');
